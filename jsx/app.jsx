@@ -6,7 +6,7 @@ const { useState: uS, useEffect: uE, useRef: uR } = React;
 // merge all scenes in display order
 const SCENES = { ...window.SCENES_A, ...window.SCENES_B };
 const TypedView = window.TypedView;
-const CONCEPT_ORDER = ["caching", "auth", "db", "http", "rate", "cors", "lb", "queue"];
+const CONCEPT_ORDER = ["caching", "auth", "db", "http", "rate", "cors", "lb", "queue", "cicd"];
 const CONCEPTS = CONCEPT_ORDER.map((id) => SCENES[id]).filter(Boolean);
 
 const NAV = [

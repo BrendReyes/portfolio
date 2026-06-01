@@ -4,6 +4,13 @@
 (function () {
   const conns = (id) => (s) => <div className="ns" style={{ marginTop: 4 }}>conns: {(s.conns || {})[id] ?? 0}</div>;
 
+  // which environment is currently taking live traffic (blue/green deploys)
+  const liveTag = (id) => (s) => (
+    <div className="ns" style={{ marginTop: 4, color: s.live === id ? "var(--ok)" : "var(--fg-faint)" }}>
+      {s.live === id ? "● LIVE" : "○ idle"}
+    </div>
+  );
+
   // FIFO queue-depth bar: queued requests stack up, free slots show remaining headroom
   const qdepth = (s) => {
     const q = s.queue || [];
@@ -369,5 +376,76 @@
     ],
   };
 
-  window.SCENES_B = { lb, queue, auth, db };
+  // ============================================================
+  // CI / CD
+  // ============================================================
+  const cicd = {
+    id: "cicd", title: "CI / CD", icon: "⟳",
+    blurb: "Turn every commit into a tested, deployable release — automatically, and the same way every time.",
+    tabs: [
+      {
+        name: "pipeline",
+        nodes: [
+          { id: "dev", label: "Developer", sub: "git push", x: 10, y: 50 },
+          { id: "build", label: "Build", sub: "CI · compile", x: 31, y: 50 },
+          { id: "test", label: "Test", sub: "CI · unit · lint", x: 53, y: 50 },
+          { id: "deploy", label: "Deploy", sub: "CD · release", x: 75, y: 50 },
+          { id: "prod", label: "Production", x: 95, y: 50 },
+        ],
+        edges: [
+          { from: "dev", to: "build", arrow: true }, { from: "build", to: "test", arrow: true },
+          { from: "test", to: "deploy", arrow: true }, { from: "deploy", to: "prod", arrow: true },
+        ],
+        steps: [
+          { caption: "A push to the main branch automatically triggers the pipeline — no manual steps, every time.", active: ["dev", "build"], packet: { from: "dev", to: "build", label: "git push" }, log: { text: "→ push to main · pipeline triggered" } },
+          { caption: "CI compiles the code and packages it into one immutable artifact — e.g. a container image.", active: ["build"], log: { text: "✓ build ok → image:sha-a1b2c3", kind: "ok" } },
+          { caption: "Automated tests + lint run as a quality gate. Green means the artifact is safe to ship.", active: ["build", "test"], packet: { from: "build", to: "test", label: "artifact", kind: "data" }, log: { text: "✓ 248 tests pass · lint clean", kind: "ok" } },
+          { caption: "CD promotes the exact artifact that passed tests — the same bytes, never rebuilt.", active: ["test", "deploy"], packet: { from: "test", to: "deploy", label: "promote", kind: "ok" }, log: { text: "promote tested artifact → deploy", kind: "info" } },
+          { caption: "It's released to production automatically. From commit to live in minutes.", active: ["deploy", "prod"], packet: { from: "deploy", to: "prod", label: "release", kind: "ok" }, log: { text: "✓ deployed to prod", kind: "ok" } },
+          { caption: "Every commit ships the same fast, repeatable, auditable way. The cost: you must invest in tests you can trust.", active: ["prod"], log: { text: "trade-off: speed relies on solid automated tests", kind: "info" } },
+        ],
+      },
+      {
+        name: "failed gate",
+        nodes: [
+          { id: "dev", label: "Developer", sub: "git push", x: 10, y: 50 },
+          { id: "build", label: "Build", sub: "CI · compile", x: 31, y: 50 },
+          { id: "test", label: "Test", sub: "CI · unit · lint", x: 53, y: 50 },
+          { id: "deploy", label: "Deploy", sub: "CD · release", x: 75, y: 50 },
+          { id: "prod", label: "Production", x: 95, y: 50 },
+        ],
+        edges: [
+          { from: "dev", to: "build", arrow: true }, { from: "build", to: "test", arrow: true },
+          { from: "test", to: "deploy", arrow: true, dash: true }, { from: "deploy", to: "prod", arrow: true, dash: true },
+        ],
+        steps: [
+          { caption: "Another commit is pushed and the pipeline kicks off as usual.", active: ["dev", "build"], packet: { from: "dev", to: "build", label: "git push" }, log: { text: "→ push to main · pipeline triggered" } },
+          { caption: "The build succeeds and produces an artifact.", active: ["build"], log: { text: "✓ build ok", kind: "ok" } },
+          { caption: "But a test fails. The gate goes red and the pipeline halts right here.", active: ["build", "test"], packet: { from: "build", to: "test", label: "run tests", kind: "data" }, log: { text: "✗ 3 tests failed", kind: "err" } },
+          { caption: "Nothing is promoted — the broken commit never reaches deploy or production.", active: ["test"], dim: ["deploy", "prod"], packet: { from: "test", to: "deploy", label: "BLOCKED", kind: "err" }, log: { text: "⛔ deploy blocked by failing gate", kind: "err" } },
+          { caption: "The developer gets fast feedback — the bug is caught in CI, not by users in prod.", active: ["test", "dev"], dim: ["deploy", "prod"], packet: { from: "test", to: "dev", label: "✗ failed", kind: "err" }, log: { text: "notify author → fix required", kind: "info" } },
+          { caption: "They fix it and push again; the pipeline re-runs from the top. Shift problems left, fail cheap.", active: ["dev", "build"], packet: { from: "dev", to: "build", label: "re-push" }, log: { text: "↻ fix → push → pipeline restarts", kind: "ok" } },
+        ],
+      },
+      {
+        name: "blue-green deploy", initial: { live: "blue" },
+        nodes: [
+          { id: "router", label: "Router", sub: "live traffic", x: 15, y: 50 },
+          { id: "blue", label: "Blue", sub: "v1", x: 62, y: 26, render: liveTag("blue") },
+          { id: "green", label: "Green", sub: "v2", x: 62, y: 74, render: liveTag("green") },
+        ],
+        edges: [{ from: "router", to: "blue", arrow: true }, { from: "router", to: "green", arrow: true }],
+        steps: [
+          { caption: "Two identical production environments sit side by side. Blue (v1) currently serves all live traffic.", active: ["router", "blue"], set: { live: "blue" }, log: { text: "router → Blue (v1) · 100% traffic" } },
+          { caption: "The new release v2 is deployed to the idle Green environment. Users stay on Blue, untouched.", active: ["green"], set: { live: "blue" }, log: { text: "deploy v2 → Green (idle)", kind: "info" } },
+          { caption: "Green is smoke-tested in isolation. If v2 is broken, real users never see it.", active: ["green"], log: { text: "✓ smoke tests pass on Green", kind: "ok" } },
+          { caption: "Flip the router: traffic cuts over from Blue to Green instantly. Zero downtime.", active: ["router", "green"], set: { live: "green" }, packet: { from: "router", to: "green", label: "cutover", kind: "ok" }, log: { text: "router → Green (v2) · 100% traffic", kind: "ok" } },
+          { caption: "If v2 misbehaves, flip straight back to Blue — that's your instant rollback.", active: ["router", "blue"], set: { live: "blue" }, packet: { from: "router", to: "blue", label: "rollback", kind: "err" }, log: { text: "⟲ rollback → Blue (v1)", kind: "err" } },
+          { caption: "Zero-downtime releases and one-click rollback — at the cost of running two full environments.", active: ["router"], log: { text: "trade-off: safety & speed vs 2× infra", kind: "info" } },
+        ],
+      },
+    ],
+  };
+
+  window.SCENES_B = { lb, queue, auth, db, cicd };
 })();
