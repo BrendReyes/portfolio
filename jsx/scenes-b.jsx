@@ -4,6 +4,26 @@
 (function () {
   const conns = (id) => (s) => <div className="ns" style={{ marginTop: 4 }}>conns: {(s.conns || {})[id] ?? 0}</div>;
 
+  // FIFO queue-depth bar: queued requests stack up, free slots show remaining headroom
+  const qdepth = (s) => {
+    const q = s.queue || [];
+    const cap = s.cap || 4;
+    const full = q.length >= cap;
+    return (
+      <div>
+        <div className="slots">
+          {q.map((k) => <div key={k} className={"slot" + (s.hot === k ? " hot" : "")}>{k}</div>)}
+          {Array.from({ length: Math.max(0, cap - q.length) }).map((_, i) => (
+            <div key={"e" + i} className="slot empty">· free ·</div>
+          ))}
+        </div>
+        <div className="ns" style={{ marginTop: 4, color: full ? "var(--err)" : "var(--accent)" }}>
+          depth {q.length}/{cap}{full ? " · FULL" : ""}
+        </div>
+      </div>
+    );
+  };
+
   // ============================================================
   // LOAD BALANCING
   // ============================================================
@@ -76,6 +96,24 @@
     id: "queue", title: "Queues & Pub/Sub", icon: "⇶",
     blurb: "Decouple producers from consumers so work happens reliably and asynchronously.",
     tabs: [
+      {
+        name: "request buffer", initial: { queue: [], cap: 4 },
+        nodes: [
+          { id: "c", label: "Clients", sub: "burst of 6", x: 13, y: 50 },
+          { id: "q", label: "Queue", sub: "cap 4 · FIFO", x: 50, y: 50, w: 120, render: qdepth },
+          { id: "srv", label: "Server", sub: "1 req at a time", x: 86, y: 50 },
+        ],
+        edges: [{ from: "c", to: "q", arrow: true }, { from: "q", to: "srv", arrow: true }],
+        steps: [
+          { caption: "A single server processes one request at a time. A bounded queue sits in front to absorb sudden bursts.", active: ["q"], set: { queue: [], cap: 4 }, log: { text: "queue empty · 0/4" } },
+          { caption: "Four clients hit the API at the same instant. Instead of overwhelming the server, the requests line up FIFO.", active: ["c", "q"], packet: { from: "c", to: "q", label: "×4 ⚡", kind: "data" }, set: { queue: ["r1", "r2", "r3", "r4"], hot: "r1" }, log: { text: "enqueue r1–r4 → depth 4/4", kind: "ok" } },
+          { caption: "The server dequeues the oldest request (r1) and works it — steadily, at its own pace.", active: ["q", "srv"], packet: { from: "q", to: "srv", label: "r1 →", kind: "ok" }, set: { queue: ["r2", "r3", "r4"], hot: "r2" }, log: { text: "dequeue r1 → serving (depth 3/4)" } },
+          { caption: "Buffering smooths the spike — but r4 still waits behind two others. Every queued request trades instant service for wait time.", active: ["q"], set: { hot: "r4" }, log: { text: "⏳ r4 waits behind 2 — tail latency ↑", kind: "info" } },
+          { caption: "Before the queue can drain, two more clients arrive and the queue fills right back up to capacity.", active: ["c", "q"], packet: { from: "c", to: "q", label: "+r5,r6", kind: "data" }, set: { queue: ["r2", "r3", "r4", "r5"], hot: "r5" }, log: { text: "enqueue r5 → depth 4/4 (full)" } },
+          { caption: "A 7th request arrives, but the queue is full. Rather than buffer forever, the server sheds load — fast-fail with 503.", active: ["q", "c"], packet: { from: "q", to: "c", label: "503", kind: "err" }, log: { text: "✗ queue full → 503 (backpressure)", kind: "err" } },
+          { caption: "That's the trade-off: a short queue rejects sooner but stays responsive; a long (or unbounded) queue accepts more but grows latency and can exhaust memory.", active: ["q"], log: { text: "trade-off: depth ↔ latency ↔ memory", kind: "info" } },
+        ],
+      },
       {
         name: "work queue",
         nodes: [
