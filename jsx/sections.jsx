@@ -106,7 +106,7 @@ function SkillsIndex({ concepts, onOpen }) {
     <div className="content fadein">
       <div className="cmdline"><span className="p">~/portfolio $</span> ls skills/</div>
       <h1>Backend concepts, visualized</h1>
-      <p className="muted">Eight core ideas — each an animated, step-through diagram with a live event log. Click any card.</p>
+      <p className="muted">Current core ideas for system design I have been learning and familiar with, more to come in future...</p>
       <div className="concept-grid" style={{ marginTop: 18 }}>
         {concepts.map((c, i) =>
         <div key={c.id} className="concept-card" onClick={() => onOpen(c.id)}>
