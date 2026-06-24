@@ -97,8 +97,7 @@ window.PROFICIENCY = [
 { label: "APIs & HTTP", pct: 68, note: "comfortable" },
 { label: "Linux & Git", pct: 68, note: "comfortable" },
 { label: "DSA", pct: 68, note: "comfortable" },
-{ label: "System Design", pct: 45, note: "learning" },
-{ label: "JavaScript / TS", pct: 45, note: "learning" }];
+{ label: "System Design", pct: 45, note: "learning" }];
 
 
 function SkillsIndex({ concepts, onOpen }) {
