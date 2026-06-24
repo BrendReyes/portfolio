@@ -31,7 +31,7 @@ const BOOT = [
   { t: "[ OK ] starting phosphor display service", c: "ok" },
   { t: "[ OK ] warming cache layer … hit ratio 0.0%", c: "ok" },
   { t: "[ OK ] opening connection pool (8 conns)", c: "ok" },
-  { t: "[ OK ] loading skills/*.viz … 8 modules", c: "ok" },
+  { t: "[ OK ] loading skills/*.viz … 9 modules", c: "ok" },
   { t: "[ OK ] auth · http · cache · db · queues ready", c: "ok" },
   { t: "login: brend (autologin)", c: "dim" },
   { t: "welcome.", c: "ac" },
@@ -85,10 +85,10 @@ function Intro({ onPick }) {
   const lines = [
     { text: "$ ./portfolio --start", cls: "cmdline", pause: 350 },
     { text: "Hi, I'm Brend — a backend engineering student.", cls: "lead2", pause: 260 },
-    { text: "This is my portfolio, built as a terminal.", cls: "sub2", pause: 220 },
+    { text: "This is my portfolio, built as a terminal--purely vibecoded... HA!", cls: "sub2", pause: 220 },
     { text: "The main attraction: live visualizations of the backend", cls: "sub2", pause: 60 },
     { text: "concepts I'm learning — caching, auth, databases, HTTP,", cls: "sub2", pause: 60 },
-    { text: "rate limiting, CORS, load balancing & queues.", cls: "sub2", pause: 300 },
+    { text: "rate limiting, CORS, load balancing & queues, basically everything in backend... duh", cls: "sub2", pause: 300 },
     { text: "› type a command, click the menu, or press 1–6.", cls: "hintline", pause: 0 },
   ];
   return (

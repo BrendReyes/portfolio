@@ -56,8 +56,8 @@ function About() {
           <h2>currently</h2>
           <div className="kv">
             <span className="k">building</span><span className="v">PureTube — filters YouTube Shorts by topic via the YouTube Data API</span>
-            <span className="k">learning</span><span className="v">File servers & CDNs</span>
-            <span className="k">next up</span><span className="v">Docker · Pub/Sub architecture</span>
+            <span className="k">learning</span><span className="v">Docker &amp; CI/CD pipelines</span>
+            <span className="k">next up</span><span className="v">Pub/Sub · Observability</span>
             <span className="k">open to</span><span className="v">backend internships &amp; junior roles</span>
           </div>
 
@@ -200,13 +200,13 @@ const ROADMAP = [
 { when: "Mar 2026", state: "done", title: "SQL course", desc: "Deeper SQL — joins, indexes, and writing queries that scale." },
 { when: "Apr 2026", state: "done", title: "Blog Aggregator", desc: "An RSS blog aggregator — feeds, persistence, and scheduled fetching in Go." },
 { when: "May 2026", state: "done", title: "HTTP servers & PureTube", desc: "Built HTTP servers and kicked off development of PureTube, my YouTube Shorts topic filter." },
-{ when: "Jun 2026 · now", state: "now", title: "File servers, CDNs & PureTube", desc: "Learning file servers & CDNs — and actively developing PureTube." },
-{ when: "Jul 2026", state: "todo", title: "Docker & Pub/Sub", desc: "Containerization with Docker and event-driven Pub/Sub architecture." },
+{ when: "Jun 2026", state: "done", title: "File servers, CDNs", desc: "Learned how file servers & CDNs store, serve, and cache static assets." },
+{ when: "Jun 2026 · now", state: "now", title: "Docker & CI/CD", desc: "Containerizing apps with Docker, and automating build–test–deploy pipelines with CI/CD & GitHub Actions — wrapping up both this month." },
+{ when: "Jul 2026", state: "todo", title: "Pub/Sub Architecture", desc: "Event-driven messaging — decoupling services with message queues and publish/subscribe so work happens asynchronously." },
 { when: "Aug 2026", state: "todo", title: "Observability & AWS", desc: "Logging and observability with Grafana, plus first steps into AWS." },
-{ when: "Sep 2026", state: "todo", title: "CI/CD & GitHub Actions", desc: "Automated pipelines — building, testing, and deploying with GitHub Actions." },
-{ when: "Oct 2026", state: "todo", title: "Kubernetes", desc: "Orchestrating containers at scale." },
-{ when: "Nov 2026", state: "todo", title: "JavaScript & TypeScript", desc: "Rounding out the stack with typed, modern JS." },
-{ when: "Dec 2026", state: "todo", title: "To be decided…", desc: "The road keeps going. Whatever's next, I'll stay hungry." }];
+{ when: "Sep 2026", state: "todo", title: "Kubernetes", desc: "Orchestrating containers at scale — scheduling, scaling, and self-healing." },
+{ when: "Oct 2026", state: "todo", title: "JavaScript & TypeScript", desc: "Rounding out the stack with typed, modern JS." },
+{ when: "Nov 2026", state: "todo", title: "To be decided…", desc: "The road keeps going. Whatever's next, I'll stay hungry." }];
 
 
 function Roadmap() {
@@ -215,6 +215,16 @@ function Roadmap() {
       <div className="cmdline"><span className="p">~/portfolio $</span> cat roadmap.md</div>
       <h1>The journey</h1>
       <p className="muted" style={{ fontWeight: "400", width: "630px" }}>Where I've been, where I am, and what's planned. <span className="dotpulse" style={{ color: "var(--accent)" }}>◆</span> = current focus.</p>
+
+      <div className="capstone">
+        <div className="cap-top">
+          <span className="cap-tag">▌ capstone project</span>
+          <span className="cap-status"><span className="cap-dot" />in progress</span>
+        </div>
+        <div className="cap-name">PureTube<span className="cap-cursor">_</span></div>
+        <div className="cap-tagline">Filtering YouTube Shorts down to a single topic via the YouTube Data API — my long-running build that spans the milestones below.</div>
+      </div>
+
       <div className="timeline" style={{ marginTop: 22 }}>
         {ROADMAP.map((r, i) =>
         <div key={i} className={"tl-item " + (r.state === "done" ? "done" : r.state === "now" ? "now" : "")}>
@@ -284,7 +294,9 @@ const BOOTDEV = [
 { t: "Learn SQL", s: "done" },
 { t: "Build a Blog Aggregator", s: "done" },
 { t: "Learn HTTP Servers", s: "done" },
-{ t: "Learn File Servers & CDNs", s: "wip" }];
+{ t: "Learn File Servers & CDNs", s: "done" },
+{ t: "Learn Docker", s: "wip" },
+{ t: "Learn CI/CD", s: "wip" }];
 
 
 function Certs() {
